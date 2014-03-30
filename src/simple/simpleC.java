@@ -2,14 +2,24 @@ package simple;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -37,6 +47,8 @@ public class SimpleC extends JFrame{
 	JButton buttonN = new JButton("n!");
 	JButton buttonShift = new JButton("Shift");
 	
+	
+	
 	/**control variable, else variable*/
 	double number; // remember the number to calculate 
 	String numberstring = ""; //recode number in text field
@@ -44,6 +56,8 @@ public class SimpleC extends JFrame{
 	String operator; //recode sign
 	boolean shiftControl = false; //shift control
 	int docControl = 0; //calculate decimal
+	double numberCalaulate;
+	boolean numC;
 	
 	/**set button, JFrame, Panel*/
 	public SimpleC(){
@@ -84,6 +98,11 @@ public class SimpleC extends JFrame{
 		buttonN.addActionListener(new buttonAction());
 		buttonShift.addActionListener(new buttonAction());
 		buttonShift.setBackground(Color.cyan);
+		
+		numberField.setEditable(false);
+		
+		
+		
 	}
 	
 	/**action listener*/
@@ -113,20 +132,24 @@ public class SimpleC extends JFrame{
 					 ((AbstractButton) event.getSource()).getText() == "9"){ //the number input
 				numberstring += ((AbstractButton) event.getSource()).getText();
 				numberField.setText(numberstring);
-				number = Double.parseDouble(numberField.getText());
 				
-				if (number == 0){ //Foolproof
+				if(((AbstractButton) event.getSource()).getText() != "0")
+					numC = true;
+				
+				if (numC == false){ //Foolproof
 					number = 0;
 					numberstring = "";
 					numberField.setText("0");
+					numC = true;
 				}
+				
 				if(doc == true) //doc control
 					docControl++;
 				
 			}else if(((AbstractButton) event.getSource()).getText() == "="){ //base operation
-				numberField.setText(baseOperation(number,
-	                    Double.parseDouble(numberField.getText()), 
-	                    operator, shiftControl) + "");
+				numberCalaulate = Double.parseDouble(numberField.getText());
+				numberstring = baseOperation(number, numberCalaulate, operator, shiftControl) + "";
+				numberField.setText(numberstring);
 				
 			}else if(((AbstractButton) event.getSource()).getText() == "sin / arcsin" ||
 				 	 ((AbstractButton) event.getSource()).getText() == "cos / arctan" ||
@@ -145,6 +168,9 @@ public class SimpleC extends JFrame{
 			}else if(((AbstractButton) event.getSource()).getText() == "c"){ //to reset zero
 				numberstring = "";
 				numberField.setText("0");
+				numberCalaulate = 0;
+				number = 0;
+				numC = false;
 				
 			}else if(((AbstractButton) event.getSource()).getText() == "n!"){ //to calculate factorial
 				number = Double.parseDouble(numberField.getText());
@@ -176,13 +202,12 @@ public class SimpleC extends JFrame{
 				
 			}else{//to set the sign prepared to calculate by based operation
 				number = Double.parseDouble(numberField.getText());
-				
 				doc = false;
 				numberstring = "";
 				
 				numberField.setText(numberstring);
-			
-				operator = (String) ((AbstractButton) event.getSource()).getText();
+				
+				operator = (String)((AbstractButton) event.getSource()).getText();
 			}
 		}
 	}
@@ -277,14 +302,105 @@ public class SimpleC extends JFrame{
 		return sum;
 	}
 	
+	private static boolean isPasswordCorrect(char[] inputPassword) {
+		char[] actualPassword = { '0', '0', '0', '0' };
+		if (inputPassword.length != actualPassword.length)
+			return false; // Return false if lengths are unequal
+		for (int i = 0; i < inputPassword.length; i++)
+			if (inputPassword[i] != actualPassword[i])
+				return false;
+		return true;
+	}
+	
 	/**main method*/
 	public static void main(String[] args){
 		/**create the frame*/
-		SimpleC frame = new SimpleC();
-		frame.setTitle("計算機");
-		frame.setSize(500, 350);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
+		final SimpleC computerFrame = new SimpleC();
+		computerFrame.setTitle("計算機");
+		computerFrame.setSize(500, 350);
+		computerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		computerFrame.setLocationRelativeTo(null);
+		
+		final JFrame passwordFrame = new JFrame("JPassword Usage Demo");
+		JLabel jlbPassword = new JLabel("Enter the password: ");
+		JPasswordField jpwName = new JPasswordField(10);
+		jpwName.setEchoChar('*');
+		jpwName.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				JPasswordField input = (JPasswordField) e.getSource();
+				char[] password = input.getPassword();
+				if (isPasswordCorrect(password)) {
+					JOptionPane.showMessageDialog(passwordFrame,
+							"Correct  password.");
+					passwordFrame.setVisible(false);
+					computerFrame.setVisible(true);
+				} else {
+					JOptionPane.showMessageDialog(passwordFrame,
+							"Sorry. Try again.", "Error Message",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		
+		JPanel jplContentPane = new JPanel(new BorderLayout());
+		jplContentPane.setBorder(BorderFactory.createEmptyBorder(20, 20,
+				20, 20));
+		jplContentPane.add(jlbPassword, BorderLayout.WEST);
+		jplContentPane.add(jpwName, BorderLayout.CENTER);
+		passwordFrame.setContentPane(jplContentPane);
+		passwordFrame.addWindowListener(new WindowAdapter() {
+
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);
+			}
+		});
+		passwordFrame.pack();
+		passwordFrame.setVisible(false);
+		passwordFrame.setLocationRelativeTo(null);
+		
+		final JFrame chooseFrame = new JFrame("register / login");
+		JButton buttonLogin = new JButton("Login");
+		JButton buttonRegister = new JButton("Register");
+		JPanel jplSetWordFrame = new JPanel(new GridLayout(2, 1));
+		jplSetWordFrame.add(buttonLogin);
+		jplSetWordFrame.add(buttonRegister);
+		chooseFrame.setContentPane(jplSetWordFrame);
+		buttonLogin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+					passwordFrame.setVisible(true);
+			}
+		});
+		buttonRegister.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+					final File file = new File("password.txt");
+					final JFrame setPass = new JFrame("Register");
+					JLabel jlbSetPass = new JLabel("Enter the password: ");
+					JPasswordField jpwSetPass = new JPasswordField(10);
+					jpwSetPass.setEchoChar('*');
+					jpwSetPass.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							JPasswordField input = (JPasswordField) e.getSource();
+							char[] password = input.getPassword();
+							try {
+								PrintWriter output = new PrintWriter(file);
+								output
+							} catch (FileNotFoundException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							JOptionPane.showMessageDialog(passwordFrame,
+									"Success.");
+							chooseFrame.setVisible(true);
+							setPass.setVisible(false);
+						}
+					});
+			}
+		});
+		
+		chooseFrame.setSize(200,100);
+		chooseFrame.setLocationRelativeTo(null);
+		chooseFrame.setVisible(true);
+		
 	}
 }
