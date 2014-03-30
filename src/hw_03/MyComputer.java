@@ -1,3 +1,4 @@
+/**
 package hw_03;
 
 import java.awt.BorderLayout;
@@ -237,6 +238,7 @@ public class MyComputer extends JFrame {
 	/**
 	 * Launch the application.
 	 */
+/**
 	public static void main(String[] args) {
 		MyComputer frame = new MyComputer();
 		
@@ -249,3 +251,4 @@ public class MyComputer extends JFrame {
 
 	
 }
+*/
