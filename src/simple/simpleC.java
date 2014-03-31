@@ -2,8 +2,8 @@ package simple;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Scanner;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -22,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
 
 
 
@@ -58,6 +60,8 @@ public class SimpleC extends JFrame{
 	int docControl = 0; //calculate decimal
 	double numberCalaulate;
 	boolean numC;
+	static boolean isPasswordFrame;
+	static boolean isRegisterFrame;
 	
 	/**set button, JFrame, Panel*/
 	public SimpleC(){
@@ -100,8 +104,6 @@ public class SimpleC extends JFrame{
 		buttonShift.setBackground(Color.cyan);
 		
 		numberField.setEditable(false);
-		
-		
 		
 	}
 	
@@ -302,105 +304,153 @@ public class SimpleC extends JFrame{
 		return sum;
 	}
 	
-	private static boolean isPasswordCorrect(char[] inputPassword) {
-		char[] actualPassword = { '0', '0', '0', '0' };
-		if (inputPassword.length != actualPassword.length)
-			return false; // Return false if lengths are unequal
+	private static boolean isPasswordCorrect(char[] inputPassword) throws FileNotFoundException{
+		File file = new File("Password.txt");
+		Scanner input = new Scanner(file);
+		char[] truePassword = input.next().toCharArray();
+		input.close();
+		if(truePassword.length != inputPassword.length)
+			return false;
 		for (int i = 0; i < inputPassword.length; i++)
-			if (inputPassword[i] != actualPassword[i])
+			if (inputPassword[i] != truePassword[i])
 				return false;
+		
 		return true;
+	}
+	
+	public static void process(char[] newPassword) throws FileNotFoundException{
+		File targetFile = new File("Password.txt");
+		PrintWriter output = new PrintWriter(targetFile);
+		
+		output.print(newPassword);
+	    output.close();
 	}
 	
 	/**main method*/
 	public static void main(String[] args){
-		/**create the frame*/
 		final SimpleC computerFrame = new SimpleC();
+		final JFrame chooseFrame = new JFrame();
+		final Password passwordFrame = new Password();
+		final Password registerFrame = new Password();
+		
+		
+		/**create computer frame*/
 		computerFrame.setTitle("­pºâ¾÷");
 		computerFrame.setSize(500, 350);
 		computerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		computerFrame.setLocationRelativeTo(null);
+		computerFrame.setVisible(false);
 		
-		final JFrame passwordFrame = new JFrame("JPassword Usage Demo");
-		JLabel jlbPassword = new JLabel("Enter the password: ");
-		JPasswordField jpwName = new JPasswordField(10);
-		jpwName.setEchoChar('*');
-		jpwName.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				JPasswordField input = (JPasswordField) e.getSource();
-				char[] password = input.getPassword();
-				if (isPasswordCorrect(password)) {
-					JOptionPane.showMessageDialog(passwordFrame,
-							"Correct  password.");
-					passwordFrame.setVisible(false);
-					computerFrame.setVisible(true);
-				} else {
-					JOptionPane.showMessageDialog(passwordFrame,
-							"Sorry. Try again.", "Error Message",
-							JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
+		/**create password frame*/
 		
-		JPanel jplContentPane = new JPanel(new BorderLayout());
-		jplContentPane.setBorder(BorderFactory.createEmptyBorder(20, 20,
+		passwordFrame.setTitle("Login");
+		passwordFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		passwordFrame.setVisible(false);
+		passwordFrame.setSize(300, 100);
+		passwordFrame.setLocationRelativeTo(null);
+		
+		JPanel p = new JPanel(new BorderLayout());
+		JLabel jlbPassword = new JLabel("Enter the password:");
+		JPasswordField jpfPassword = new JPasswordField("");
+		p.setBorder(BorderFactory.createEmptyBorder(20, 20,
 				20, 20));
-		jplContentPane.add(jlbPassword, BorderLayout.WEST);
-		jplContentPane.add(jpwName, BorderLayout.CENTER);
-		passwordFrame.setContentPane(jplContentPane);
+		p.add(jlbPassword, BorderLayout.WEST);
+		p.add(jpfPassword, BorderLayout.CENTER);
+		passwordFrame.setContentPane(p);
 		passwordFrame.addWindowListener(new WindowAdapter() {
 
 			public void windowClosing(WindowEvent e) {
 				System.exit(0);
 			}
 		});
-		passwordFrame.pack();
-		passwordFrame.setVisible(false);
-		passwordFrame.setLocationRelativeTo(null);
 		
-		final JFrame chooseFrame = new JFrame("register / login");
-		JButton buttonLogin = new JButton("Login");
-		JButton buttonRegister = new JButton("Register");
-		JPanel jplSetWordFrame = new JPanel(new GridLayout(2, 1));
-		jplSetWordFrame.add(buttonLogin);
-		jplSetWordFrame.add(buttonRegister);
-		chooseFrame.setContentPane(jplSetWordFrame);
-		buttonLogin.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-					passwordFrame.setVisible(true);
-			}
-		});
-		buttonRegister.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-					final File file = new File("password.txt");
-					final JFrame setPass = new JFrame("Register");
-					JLabel jlbSetPass = new JLabel("Enter the password: ");
-					JPasswordField jpwSetPass = new JPasswordField(10);
-					jpwSetPass.setEchoChar('*');
-					jpwSetPass.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							JPasswordField input = (JPasswordField) e.getSource();
-							char[] password = input.getPassword();
-							try {
-								PrintWriter output = new PrintWriter(file);
-								output
-							} catch (FileNotFoundException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							JOptionPane.showMessageDialog(passwordFrame,
-									"Success.");
-							chooseFrame.setVisible(true);
-							setPass.setVisible(false);
-						}
-					});
+		
+		jpfPassword.setEchoChar('*');
+		jpfPassword.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				JPasswordField input = (JPasswordField) e.getSource();
+				char[] password = input.getPassword();
+				
+				try {
+					if(isPasswordCorrect(password)){
+						JOptionPane.showMessageDialog(passwordFrame, "Correct password.");
+						computerFrame.setVisible(true);
+						passwordFrame.setVisible(false);
+					}else{
+						JOptionPane.showMessageDialog(passwordFrame, 
+								"Sorry. Try again.", "Error password.", 
+								JOptionPane.ERROR_MESSAGE);
+					}
+				} catch (HeadlessException | FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
 		
-		chooseFrame.setSize(200,100);
+		/**create register frame*/
+		registerFrame.setTitle("Login");
+		registerFrame.setSize(300, 60);
+		registerFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		registerFrame.setLocationRelativeTo(null);
+		registerFrame.setVisible(false);
+		
+		JLabel jlbRegister = new JLabel("Enter new password:");
+		JPasswordField jpfRegister = new JPasswordField("");
+	
+		registerFrame.add(jlbRegister, BorderLayout.WEST);
+		registerFrame.add(jpfRegister, BorderLayout.CENTER);
+		
+		jpfRegister.setEchoChar('*');
+		jpfRegister.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				JPasswordField input = (JPasswordField) e.getSource();
+				
+				try {
+					process(input.getPassword());
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				}
+				
+				JOptionPane.showMessageDialog(registerFrame, "Success.");
+				
+				registerFrame.setVisible(false);
+				chooseFrame.setVisible(true);
+			}
+		});
+		
+		/**create choose frame*/
+		chooseFrame.setTitle("Login");
+		chooseFrame.setSize(300, 200);
+		chooseFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		chooseFrame.setLocationRelativeTo(null);
 		chooseFrame.setVisible(true);
+		
+
+		JButton buttonLogin = new JButton("Login");
+		JButton buttonRegister = new JButton("Register");
+		
+		JPanel jpChoose = new JPanel(new GridLayout(2, 1));
+		
+		jpChoose.setBorder(BorderFactory.createEmptyBorder(20, 20,
+				20, 20));
+		jpChoose.add(buttonLogin, BorderLayout.WEST);
+		jpChoose.add(buttonRegister, BorderLayout.CENTER);
+		chooseFrame.setContentPane(jpChoose);
+		
+		buttonLogin.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				passwordFrame.setVisible(true);
+				chooseFrame.setVisible(false);
+			}
+		});
+		buttonRegister.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				registerFrame.setVisible(true);
+				chooseFrame.setVisible(false);
+			}
+		});
+		
 		
 	}
 }
