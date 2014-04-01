@@ -3,24 +3,13 @@ package simple;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.Scanner;
 
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -60,8 +49,6 @@ public class SimpleC extends JFrame{
 	int docControl = 0; //calculate decimal
 	double numberCalaulate;
 	boolean numC;
-	static boolean isPasswordFrame;
-	static boolean isRegisterFrame;
 	
 	/**set button, JFrame, Panel*/
 	public SimpleC(){
@@ -120,6 +107,7 @@ public class SimpleC extends JFrame{
 					numberstring += ".";
 					numberField.setText(numberstring);
 					doc = true;
+					numC = true;
 				}
 				
 			}else if(((AbstractButton) event.getSource()).getText() == "0" ||
@@ -142,7 +130,6 @@ public class SimpleC extends JFrame{
 					number = 0;
 					numberstring = "";
 					numberField.setText("0");
-					numC = true;
 				}
 				
 				if(doc == true) //doc control
@@ -151,6 +138,8 @@ public class SimpleC extends JFrame{
 			}else if(((AbstractButton) event.getSource()).getText() == "="){ //base operation
 				numberCalaulate = Double.parseDouble(numberField.getText());
 				numberstring = baseOperation(number, numberCalaulate, operator, shiftControl) + "";
+				if(Double.parseDouble(numberstring) == -0)
+					numberstring = "0";
 				numberField.setText(numberstring);
 				
 			}else if(((AbstractButton) event.getSource()).getText() == "sin / arcsin" ||
@@ -172,7 +161,10 @@ public class SimpleC extends JFrame{
 				numberField.setText("0");
 				numberCalaulate = 0;
 				number = 0;
-				numC = false;
+				numC = false;	
+				doc = false;
+				operator = "";
+				docControl = 0;
 				
 			}else if(((AbstractButton) event.getSource()).getText() == "n!"){ //to calculate factorial
 				number = Double.parseDouble(numberField.getText());
@@ -304,153 +296,16 @@ public class SimpleC extends JFrame{
 		return sum;
 	}
 	
-	private static boolean isPasswordCorrect(char[] inputPassword) throws FileNotFoundException{
-		File file = new File("Password.txt");
-		Scanner input = new Scanner(file);
-		char[] truePassword = input.next().toCharArray();
-		input.close();
-		if(truePassword.length != inputPassword.length)
-			return false;
-		for (int i = 0; i < inputPassword.length; i++)
-			if (inputPassword[i] != truePassword[i])
-				return false;
-		
-		return true;
-	}
-	
-	public static void process(char[] newPassword) throws FileNotFoundException{
-		File targetFile = new File("Password.txt");
-		PrintWriter output = new PrintWriter(targetFile);
-		
-		output.print(newPassword);
-	    output.close();
-	}
+
 	
 	/**main method*/
-	public static void main(String[] args){
-		final SimpleC computerFrame = new SimpleC();
-		final JFrame chooseFrame = new JFrame();
-		final Password passwordFrame = new Password();
-		final Password registerFrame = new Password();
-		
-		
-		/**create computer frame*/
-		computerFrame.setTitle("­pºâ¾÷");
-		computerFrame.setSize(500, 350);
-		computerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		computerFrame.setLocationRelativeTo(null);
-		computerFrame.setVisible(false);
-		
-		/**create password frame*/
-		
-		passwordFrame.setTitle("Login");
-		passwordFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		passwordFrame.setVisible(false);
-		passwordFrame.setSize(300, 100);
-		passwordFrame.setLocationRelativeTo(null);
-		
-		JPanel p = new JPanel(new BorderLayout());
-		JLabel jlbPassword = new JLabel("Enter the password:");
-		JPasswordField jpfPassword = new JPasswordField("");
-		p.setBorder(BorderFactory.createEmptyBorder(20, 20,
-				20, 20));
-		p.add(jlbPassword, BorderLayout.WEST);
-		p.add(jpfPassword, BorderLayout.CENTER);
-		passwordFrame.setContentPane(p);
-		passwordFrame.addWindowListener(new WindowAdapter() {
-
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
-			}
-		});
-		
-		
-		jpfPassword.setEchoChar('*');
-		jpfPassword.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				JPasswordField input = (JPasswordField) e.getSource();
-				char[] password = input.getPassword();
-				
-				try {
-					if(isPasswordCorrect(password)){
-						JOptionPane.showMessageDialog(passwordFrame, "Correct password.");
-						computerFrame.setVisible(true);
-						passwordFrame.setVisible(false);
-					}else{
-						JOptionPane.showMessageDialog(passwordFrame, 
-								"Sorry. Try again.", "Error password.", 
-								JOptionPane.ERROR_MESSAGE);
-					}
-				} catch (HeadlessException | FileNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
-		
-		/**create register frame*/
-		registerFrame.setTitle("Login");
-		registerFrame.setSize(300, 60);
-		registerFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		registerFrame.setLocationRelativeTo(null);
-		registerFrame.setVisible(false);
-		
-		JLabel jlbRegister = new JLabel("Enter new password:");
-		JPasswordField jpfRegister = new JPasswordField("");
-	
-		registerFrame.add(jlbRegister, BorderLayout.WEST);
-		registerFrame.add(jpfRegister, BorderLayout.CENTER);
-		
-		jpfRegister.setEchoChar('*');
-		jpfRegister.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				JPasswordField input = (JPasswordField) e.getSource();
-				
-				try {
-					process(input.getPassword());
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-				}
-				
-				JOptionPane.showMessageDialog(registerFrame, "Success.");
-				
-				registerFrame.setVisible(false);
-				chooseFrame.setVisible(true);
-			}
-		});
-		
+	public static void main(String[] args){	
+		ChooseFrame chooseFrame = new ChooseFrame();
 		/**create choose frame*/
-		chooseFrame.setTitle("Login");
+		chooseFrame.createFrame();
 		chooseFrame.setSize(300, 200);
 		chooseFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		chooseFrame.setLocationRelativeTo(null);
 		chooseFrame.setVisible(true);
-		
-
-		JButton buttonLogin = new JButton("Login");
-		JButton buttonRegister = new JButton("Register");
-		
-		JPanel jpChoose = new JPanel(new GridLayout(2, 1));
-		
-		jpChoose.setBorder(BorderFactory.createEmptyBorder(20, 20,
-				20, 20));
-		jpChoose.add(buttonLogin, BorderLayout.WEST);
-		jpChoose.add(buttonRegister, BorderLayout.CENTER);
-		chooseFrame.setContentPane(jpChoose);
-		
-		buttonLogin.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				passwordFrame.setVisible(true);
-				chooseFrame.setVisible(false);
-			}
-		});
-		buttonRegister.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				registerFrame.setVisible(true);
-				chooseFrame.setVisible(false);
-			}
-		});
-		
-		
 	}
 }
